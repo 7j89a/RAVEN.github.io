@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مكتبة الحصص</title>
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.6.12/plyr.css" />
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #121212;
+            color: #E0E0E0;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            width: 80%;
+            max-width: 960px;
+            background-color: #1E1E1E;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+        .title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: #B0B0B0;
+        }
+        .video-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .video-button {
+            background: linear-gradient(90deg, #C0C0C0, #A0A0A0);
+            color: black;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        .video-button:hover {
+            background: linear-gradient(90deg, #A0A0A0, #909090);
+            transform: translateY(-2px);
+        }
+        .video-button:active {
+            transform: translateY(1px);
+        }
+        .annotation {
+            display: none;
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(240, 240, 240, 0.85);
+            padding: 10px;
+            border-radius: 5px;
+            color: #000;
+            font-size: 14px;
+        }
+        .unit-title {
+            text-align: center;
+            font-size: 1.5rem;
+            margin: 1rem 0;
+            color: #C0C0C0;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #B0B0B0;
+            margin-top: auto;
+            padding: 20px;
+            width: 100%;
+        }
+        .spacer {
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="home" class="container">
+        <h1 class="title">مكتبة الحصص</h1>
+        <button id="go-to-classes" class="video-button">مكثف محمد أبو الهيجاء</button>
+        <div class="spacer"></div>
+        <button id="go-to-ahmed" class="video-button">مكثف أحمد المصري</button>
+    </div>
+    <div id="classes" class="container" style="display: none;">
+        <h1 class="title">حصص العلوم</h1>
+        <div class="video-buttons"></div>
+        <button id="back-to-home-from-classes" class="video-button">عودة إلى الصفحة الرئيسية</button>
+    </div>
+    <div id="video-player" class="container" style="display: none;">
+        <video id="custom-video" width="100%" controls></video>
+        <div class="annotation" id="annotation">هذه ملاحظة في وقت معين!</div>
+        <button id="back-to-classes-from-video" class="video-button">عودة إلى الحصص</button>
+    </div>
+    <script src="https://cdn.plyr.io/3.6.12/plyr.polyfilled.js"></script>
+    <script>
+        const video = document.getElementById('custom-video');
+        const annotation = document.getElementById('annotation');
+        const videoButtonsContainer = document.querySelector('.video-buttons');
+        const homeSection = document.getElementById('home');
+        const classesSection = document.getElementById('classes');
+        const playerSection = document.getElementById('video-player');
+        const mohammadVideos = [
+            { title: "مفاهيم الحموض والقواعد", src: "https://playtubescript.fra1.cdn.digitaloceanspaces.com/upload/videos/2024/11/je6Sd2Mkbt8neBRpXc48_29_f7600632773498cef448fae53910a43b_video.mp4" },
+            { title: "الحموض والقواعد + حل أسئلة", src: "https://playtubescript.fra1.cdn.digitaloceanspaces.com/upload/videos/2024/11/NM8QGCo1Kci4W2HbUWe3_30_5adfc87641bc255d6eabe4b71d957e8b_video.mp4" },
+            { title: "شرح الدرس الثاني", src: "https://playtubescript.fra1.cdn.digitaloceanspaces.com/upload/videos/2024/11/kGfO2eni8SUtdC1FWeaM_29_48112dc043397b6986f3cbaca27df9b3_video.mp4" },
+            { title: "حل أسئلة الدرس الثاني", src: "https://playtubescript.fra1.cdn.digitaloceanspaces.com/upload/videos/2024/11/5O1aAvjDrPXhzcgHjyjA_29_d4510ab7d675663e3b615dead67b3372_video.mp4" },
+            { title: "شرح الدرس الثالث + حل أسئلة", src: "https://playtubescript.fra1.cdn.digitaloceanspaces.com/upload/videos/2024/11/9jMhdXKk12LGTTv2eZQ3_29_47536c4a10856089cf4ff479889d60c6_video.mp4" },
+            { title: "اسم الحصة أسئلة الجداول", src: "https://playtubescript.fra1.cdn.digitaloceanspaces.com/upload/videos/2024/11/2OxSUN2wpi2N9Zs5CbXF_29_55fd992305c720ac22a1ec6d6898e1cf_video.mp4" },
+            { title: "أسئلة الجدول 2", src: "https://playtubescript.fra1.cdn.digitaloceanspaces.com/upload/videos/2024/11/ov9XJ9z2Lc1qJkJvKprd_30_87cad87fef45409fd48bcdf31d73e3d7_video.mp4" },
+            { title: "المحاليل المنظمة", src: "https://dso8.raed.net:455/files/index-[index]-3-.mp4" }
+        ];
+        const ahmedVideos = [
+            { unit: "الوحدة الأولى", lessons: [{ title: "لملمة أفكار التفاضل", iframe: "https://iframe.mediadelivery.net/embed/344329/7657e388-1a4a-4e4f-b36f-bfbc4e445ee3?autoplay=true" }, { title: "مكثف التطبيق الهندسي - الجزء الأول", iframe: "https://iframe.mediadelivery.net/embed/344329/fd553477-fd2c-41e7-9d0c-6ba4aafebe97?autoplay=true" }, { title: "مكثف التطبيق الهندسي - الجزء الثاني", iframe: "https://iframe.mediadelivery.net/embed/344329/4afc0610-8c0e-4264-8f5e-6b674784c776?autoplay=true" }] },
+            { unit: "الوحدة الثانية", lessons: [{ title: "مراجعة ولملمة أفكار القيم القصوى", iframe: "https://iframe.mediadelivery.net/embed/344329/a372046f-a354-4253-baf0-095cc8864ca0?autoplay=true" }, { title: "مراجعة ولملمة أفكار منحنيات القيم القصوى", iframe: "https://iframe.mediadelivery.net/embed/344329/c592a576-57e0-487e-b4dd-b90b476afb62?autoplay=true" }, { title: "تطبيقات القيم القصوى أسئلة اضافية", iframe: "https://iframe.mediadelivery.net/embed/344329/be690497-b4bd-483b-856b-8b86cb18b786?autoplay=true" }, { title: "تطبيقات القيم القصوى أسئلة اضافية 2", iframe: "https://iframe.mediadelivery.net/embed/344329/773f9dc9-0b9b-441c-8654-37c02f543164?autoplay=true" }] },
+            { unit: "الوحدة الثالثة", lessons: [{ title: "مراجعة ولملمة الأفكار الاعداد المركبة", iframe: "https://iframe.mediadelivery.net/embed/344329/138dcae4-f130-4ad8-afb9-65fc7a02f99e?autoplay=true" }, { title: "لملمة أفكار العمليات على الأعداد المركبة", iframe: "https://iframe.mediadelivery.net/embed/344329/841ee5be-7a9f-4a45-a2ad-85b798de7b31?autoplay=true" }, { title: "مراجعة ومكثف المحل الهندسي", iframe: "https://iframe.mediadelivery.net/embed/344329/70a5c4b5-d26c-4547-89b8-08c9d8101f23?autoplay=true" }, { title: "العمليات على الأعداد المركبة كتاب التمارين", iframe: "https://iframe.mediadelivery.net/embed/344329/bdb858e5-026d-46d3-a46e-8b7521e5e6cb?autoplay=true" }, { title: "المحل الهندسي كتاب التمارين", iframe: "https://iframe.mediadelivery.net/embed/344329/99ffea03-cbbf-4925-b93c-b8812d3dcd27?autoplay=true" }] },
+            { unit: "الوحدة الرابعة", lessons: [{ title: "لملمة أفكار التكامل الجزء الأول", iframe: "https://iframe.mediadelivery.net/embed/344329/c1795e34-0643-4cb5-80b2-e7046aba16fb?autoplay=true" }, { title: "لملمة أفكار التكامل الجزء الثاني", iframe: "https://iframe.mediadelivery.net/embed/344329/9bc7e844-bc02-4968-be6e-6b2be73a8b02?autoplay=true" }, { title: "لملمة أفكار التكامل الجزء الثالث", iframe: "https://iframe.mediadelivery.net/embed/344329/0c2de86c-55d9-4d55-ab2e-db589d298599?autoplay=true" }, { title: "لملمة أفكار التكامل بالتعويض", iframe: "https://iframe.mediadelivery.net/embed/344329/f178ff15-ca0f-4cd4-bc35-396b6c4dfe90?autoplay=true" }, { title: "لملمة أفكار الأجزاء", iframe: "https://iframe.mediadelivery.net/embed/344329/2a3f68f2-773b-49bc-8d62-8e157937080f?autoplay=true" }, { title: "لملمة أفكار تكاملات النسب المثلثية", iframe: "https://iframe.mediadelivery.net/embed/344329/5b3c2024-7cc6-4e35-87fa-b7e48e080bdc?autoplay=true" }, { title: "لملمة أفكار تكامل الكسور الجزئية", iframe: "https://iframe.mediadelivery.net/embed/344329/78bdcae6-58c0-4ea8-a356-4e3d3101acb7?autoplay=true" }, { title: "لملمة أفكار المساحات والحجوم", iframe: "https://iframe.mediadelivery.net/embed/344329/c3c62cec-5a1c-429d-9484-431332efd93b?autoplay=true" }, { title: "لملمة أفكار المعادلات التفاضلية", iframe: "https://iframe.mediadelivery.net/embed/344329/fc9ef009-87a6-4ef7-9b11-b62ce84e8bfa?autoplay=true" }] },
+            { unit: "الوحدة الخامسة", lessons: [{ title: "لملمة أفكار المتجهات", iframe: "https://iframe.mediadelivery.net/embed/344329/3b911066-9720-47e1-abc2-d5b09922a5ef?autoplay=true" }, { title: "لملمة أفكار المستقيمات في الفضاء", iframe: "https://iframe.mediadelivery.net/embed/344329/b17cdfee-1148-4a43-8ab5-328ba0c92a3d?autoplay=true" }, { title: "لملمة أفكار الضرب القياسي", iframe: "https://iframe.mediadelivery.net/embed/344329/b6f35677-48de-44c0-96bf-54a2e0e5dfd8?autoplay=true" }, { title: "المتجهات كتاب التمارين", iframe: "https://iframe.mediadelivery.net/embed/344329/9a3223ac-2e39-4a2d-84b6-c857479911b3?autoplay=true" }, { title: "المستقيمات في الفضاء كتاب التمارين", iframe: "https://iframe.mediadelivery.net/embed/344329/2bda35d7-8509-4718-ab9d-4811a1642634?autoplay=true" }, { title: "الضرب القياسي كتاب التمارين", iframe: "https://iframe.mediadelivery.net/embed/344329/b6bbc63f-b48f-48b2-ada2-93edcb4e7aef?autoplay=true" }] },
+            { unit: "الوحدة السادسة", lessons: [{ title: "مراجعة التوزيع الهندسي وذا الحدين", iframe: "https://iframe.mediadelivery.net/embed/344329/49cda4f1-95d5-4348-a7fd-545a6ce729db?autoplay=true" }, { title: "حل كتاب التمارين الهندسي وذات الحدين", iframe: "https://iframe.mediadelivery.net/embed/344329/b3bd4a3a-80b9-4901-a0d5-a743bea7f660?autoplay=true" }, { title: "لملمة أفكار التوزيع الطبيعي", iframe: "https://iframe.mediadelivery.net/embed/344329/1869b997-0c4b-4033-abce-979ae986fec7?autoplay=true" }, { title: "حل كتاب التمارين التوزيع الطبيعي", iframe: "https://iframe.mediadelivery.net/embed/344329/3fa6fdfc-bef4-4a21-9da6-cdccf6073ca8?autoplay=true" }] }
+        ];
+        document.getElementById('go-to-classes').addEventListener('click', () => {
+            homeSection.style.display = 'none';
+            classesSection.style.display = 'block';
+            loadVideoButtons(mohammadVideos);
+        });
+        document.getElementById('go-to-ahmed').addEventListener('click', () => {
+            homeSection.style.display = 'none';
+            classesSection.style.display = 'block';
+            loadAhmedVideos();
+        });
+        function loadVideoButtons(videos) {
+            videoButtonsContainer.innerHTML = '';
+            videos.forEach(videoData => {
+                const button = document.createElement('button');
+                button.className = 'video-button';
+                button.textContent = videoData.title + " - عرض الحصة";
+                button.addEventListener('click', () => {
+                    playVideo(videoData.src);
+                });
+                videoButtonsContainer.appendChild(button);
+            });
+        }
+        function loadAhmedVideos() {
+            videoButtonsContainer.innerHTML = '';
+            ahmedVideos.forEach(unit => {
+                const unitHeader = document.createElement('h2');
+                unitHeader.textContent = unit.unit;
+                unitHeader.className = "unit-title";
+                videoButtonsContainer.appendChild(unitHeader);
+                unit.lessons.forEach(lesson => {
+                    const button = document.createElement('button');
+                    button.className = 'video-button';
+                    button.textContent = lesson.title + " - عرض الحصة";
+                    button.addEventListener('click', () => {
+                        window.open(lesson.iframe, '_blank');
+                    });
+                    videoButtonsContainer.appendChild(button);
+                });
+            });
+        }
+        function playVideo(src) {
+            video.src = src;
+            video.play();
+            classesSection.style.display = 'none';
+            playerSection.style.display = 'block';
+        }
+        document.getElementById('back-to-classes-from-video').addEventListener('click', () => {
+            video.pause();
+            playerSection.style.display = 'none';
+            classesSection.style.display = 'block';
+        });
+        document.getElementById('back-to-home-from-classes').addEventListener('click', () => {
+            video.pause();
+            classesSection.style.display = 'none';
+            homeSection.style.display = 'block';
+        });
+        const player = new Plyr('#custom-video');
+        video.addEventListener('timeupdate', () => {
+            if (Math.floor(video.currentTime) === 30) {
+                annotation.style.display = 'block';
+                annotation.textContent = "هذه ملاحظة في 30 ثانية!";
+            } else {
+                annotation.style.display = 'none';
+            }
+        });
+    </script>
+    <footer>جميع الحقوق محفوظة لـ RAVEN</footer>
+</body>
+</html>
